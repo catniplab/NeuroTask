@@ -1,9 +1,5 @@
 # The NeuroTask Benchmark Dataset
 
-## Datasets Download
-
-**The public dataset suite is available for download through [Kaggle](https://www.kaggle.com/datasets/carolinafilipe/neurotask-multi-tasks-benchmark-dataset).**
-
 NeuroTask is a benchmark dataset designed to facilitate the development of accurate and efficient methods for analyzing multi-session, multi-task, and multi-subject neural data. It integrates six datasets from motor cortical regions, comprising `148 sessions` from `17 subjects` engaged in `7 distinct tasks`.
 The figure here shows an illustration.
 
@@ -20,6 +16,20 @@ The figure here shows an illustration.
 | 4  | Key Grasp              | 1      | 9      | 864      | 903     |                    |
 | 5  | Center-Out             | 2      | 4      | 681      | 763     | Dyer et al.        |M1 |
 | 6  | Maze                   | 2      | 9      | 1728     | 23117   | Churchland et al.  |M1, PMd |
+
+
+## Datasets Download
+
+**The public dataset suite is available for download through [Kaggle](https://www.kaggle.com/datasets/carolinafilipe/neurotask-multi-tasks-benchmark-dataset).** 
+
+- **If you are using the web user interface**, you can download all data from the provided [link](https://www.kaggle.com/datasets/carolinafilipe/neurotask-multi-tasks-benchmark-dataset). The download button is at the upper right corner of the webpage.
+
+- **If you would like to use the Kaggle API**, please follow the instructions [here](https://github.com/Kaggle/kaggle-api). After setting the API correctly, you can simply use the command below to download all data.
+
+```
+kaggle datasets download -d carolinafilipe/neurotask-multi-tasks-benchmark-dataset
+```
+
 
 
 ## Repository Structure
