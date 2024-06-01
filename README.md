@@ -21,3 +21,16 @@ The figure here shows an illustration.
 | 5  | Center-Out             | 2      | 4      | 681      | 763     | Dyer et al.        |M1 |
 | 6  | Maze                   | 2      | 9      | 1728     | 23117   | Churchland et al.  |M1, PMd |
 
+
+## Repository Structure
+
+In this repository, you will find the code necessary to replicate the experiments of the presented paper.
+
+The [first notebook](tutorial_data_analysis.ipynb) regards the loading, processing and visualization of the data.
+
+The [second notebook](tutorial_baselines.ipynb) presents the code to reproduce the benchmark results in the manuscript. 
+
+
+
+
+
