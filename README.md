@@ -8,3 +8,16 @@ NeuroTask is a benchmark dataset designed to facilitate the development of accur
 The figure here shows an illustration.
 
 <img src='img/NeuroTask3.png' width='780px'>
+
+| ID | Task                   | #Subj. | #Sess. | #Neurons | #Trials | Dataset            | Brain Area |
+|----|------------------------|--------|--------|----------|---------|--------------------|--------------------|
+| 1  | Random Target          | 2      | 47     | 18406    | 25483   | Makin et al.       | M1, S1 |
+| 2  | Center-Out with Bump  | 2      | 4      | 461      | 2766    | Chowdhury et al.   | Area 2 |
+| 2  | Two-Workspace          | 3      | 9      | 629      | 4515    |                    |
+| 3  | Center-Out             | 4      | 30     | 1827     | 9226    | Gallego et al.     |M1, Area 2, PMd |
+| 4  | Center-Out             | 2      | 23     | 2194     | 4712    |                    |
+| 4  | Wrist Isometric Center-Out | 1  | 13     | 899      | 2766    | Ma Xuan et al.     |M1 |
+| 4  | Key Grasp              | 1      | 9      | 864      | 903     |                    |
+| 5  | Center-Out             | 2      | 4      | 681      | 763     | Dyer et al.        |M1 |
+| 6  | Maze                   | 2      | 9      | 1728     | 23117   | Churchland et al.  |M1, PMd |
+
