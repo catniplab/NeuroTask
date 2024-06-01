@@ -30,7 +30,8 @@ The figure here shows an illustration.
 kaggle datasets download -d carolinafilipe/neurotask-multi-tasks-benchmark-dataset
 ```
 
-
+## Loading the Dataset
+We developed an API, `api_neurotask.py`, to streamline data loading and preprocessing tasks, such as data rebinning and alignment to specific start event with adjustable offsets. You can find the api tutorial here: [tutorial](tutorial_data_analysis.ipynb).
 
 ## Repository Structure
 
