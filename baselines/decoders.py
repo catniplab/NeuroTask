@@ -1,4 +1,5 @@
 ############### IMPORT PACKAGES ##################
+#from: https://github.com/KordingLab/Neural_Decoding/
 
 import numpy as np
 from numpy.linalg import inv as inv #Used in kalman filter
