@@ -129,6 +129,8 @@ def align_event(df,start_event,bin_size,offset_min=None,offset_max=None):
 ###$$ GET_SPIKES_WITH_HISTORY #####
 def get_spikes_with_history(neural_data,bins_before,bins_after,bins_current=1):
     """
+    from: https://github.com/KordingLab/Neural_Decoding/
+    
     Function that creates the covariate matrix of neural activity
 
     Parameters
