@@ -20,7 +20,7 @@ kaggle datasets download -d carolinafilipe/neurotask-multi-tasks-benchmark-datas
 
 ## Using the NeuroTask Dataset
 
-![alt text](img/dataset.png)
+<img src='img/dataset.png' width='480px'>
 
 The dataset schema is comprised of:
 
