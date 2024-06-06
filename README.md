@@ -6,7 +6,7 @@ The figure here shows an illustration.
 <img src='img/NeuroTask3.png' width='680px'>
 
 
-## Datasets Download
+## Dataset Download
 
 **The public dataset suite is available for download through [Kaggle](https://www.kaggle.com/datasets/carolinafilipe/neurotask-multi-tasks-benchmark-dataset).** 
 
@@ -43,6 +43,16 @@ In this repository, you will find the code necessary to replicate the experiment
 The [first notebook](tutorial_data_analysis.ipynb) regards the loading, processing and visualization of the data.
 
 The [second notebook](tutorial_baselines.ipynb) presents the code to reproduce the benchmark results in the manuscript. 
+
+## License \& Acknowledgement
+The NeuroTask benchmark dataset is released under a [CC BY-NC 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0). Our code implementation (api and baselines) is released under the [MIT License](https://opensource.org/licenses/MIT). We would also like to express our gratitude to the authors of baselines for releasing their code.
+
+## Contact Us
+Please feel free to contact us if you have any questions about NeuroTask: carolina.filipe@research.fchampalimaud.org
+
+
+
+
 
 
 
