@@ -4,7 +4,7 @@ import pyarrow.parquet as pq
 from scipy.signal import decimate
 
 
-def load_and_filter_parquet(parquet_file_path, filter_letters=None):
+def load_and_filter_parquet(parquet_file_path, filter_letters=None, verbose=True):
     """
     Load a Parquet file, apply filters if provided, and return the filtered DataFrame and bin size.
 
@@ -28,16 +28,20 @@ def load_and_filter_parquet(parquet_file_path, filter_letters=None):
     # Extract the bin size from the file name
     bin = float(parquet_file_path.split('_')[1])
 
-    print(f'Data loaded from {parquet_file_path} with bin size of {bin:.1g} ms')
-    print('Events columns:', [col for col in df.columns if col.startswith('Event')])
+    maxNeuronColList = [col for col in df.columns if col.startswith('Neuron')] 
+    eventColList = [col for col in df.columns if col.startswith('Event')]
+    covariateColList = [col for col in df.columns if
+                        not col.startswith('Event') and
+                        not col.startswith('Neuron') and
+                        col not in ['trial_id', 'result', 'datasetID', 'session', 'animal', 'task']]
 
-    print('Covariates columns:',
-          [col for col in df.columns if
-           not col.startswith('Event') and
-           not col.startswith('Neuron') and col
-           not in ['trial_id', 'result', 'datasetID', 'session', 'animal', 'task']])
+    if verbose:
+        print(f'Data loaded from {parquet_file_path} with bin size of {bin:.1g} ms')
+        print(f'Max No of Units: {len(maxNeuronColList)}')
+        print('Events columns:', eventColList)
+        print('Covariates columns:', covariateColList)
 
-    return df, bin
+    return df, bin, maxNeuronColList, eventColList, covariateColList
 
 
 def rebin(dataset1, prev_bin_size, new_bin_size, reset=True):
