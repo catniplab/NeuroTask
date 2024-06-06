@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 import pyarrow.parquet as pq
-import pyarrow as pa
 from scipy.signal import decimate
 
-def load_and_filter_parquet(parquet_file_path, filter_letters = None):
+
+def load_and_filter_parquet(parquet_file_path, filter_letters=None):
     """
     Load a Parquet file, apply filters if provided, and return the filtered DataFrame and bin size.
 
@@ -13,7 +13,7 @@ def load_and_filter_parquet(parquet_file_path, filter_letters = None):
     filter_letters (list, optional): List of letters to filter out from the 'result' column.
 
     Returns:
-    tuple: Filtered DataFrame and bin size as a float.
+    tuple: Filtered DataFrame and bin size (in milliseconds) as a float.
     """
 
     # Read the Parquet file with filters applied
@@ -28,18 +28,19 @@ def load_and_filter_parquet(parquet_file_path, filter_letters = None):
     # Extract the bin size from the file name
     bin = float(parquet_file_path.split('_')[1])
 
+    print(f'Data loaded from {parquet_file_path} with bin size of {bin:.1g} ms')
+    print('Events columns:', [col for col in df.columns if col.startswith('Event')])
 
-
-    print(f'Data loaded from {parquet_file_path} with bin size of {bin:.1f} ms')
-    print('Events columns:',[col for col in df.columns if col.startswith('Event')])
-
-    print('Covariates columns:', [col for col in df.columns if not col.startswith('Event') and not col.startswith('Neuron') and col not in ['trial_id','result','datasetID','session','animal', 'task']])
+    print('Covariates columns:',
+          [col for col in df.columns if
+           not col.startswith('Event') and
+           not col.startswith('Neuron') and col
+           not in ['trial_id', 'result', 'datasetID', 'session', 'animal', 'task']])
 
     return df, bin
 
 
-
-def rebin(dataset1, prev_bin_size,new_bin_size, reset=True):
+def rebin(dataset1, prev_bin_size, new_bin_size, reset=True):
     """
     Rebin the given dataset to a new bin size.
 
