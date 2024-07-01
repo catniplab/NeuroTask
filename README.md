@@ -18,6 +18,8 @@ The figure here shows an illustration.
 kaggle datasets download -d carolinafilipe/neurotask-multi-tasks-benchmark-dataset
 ```
 
+**The public dataset suite is also available for download through [Dandi](https://dandiarchive.org/dandiset/search?search=neurotask).** 
+
 ## Using the NeuroTask Dataset
 
 <img src='img/dataset.png' width='480px'>
