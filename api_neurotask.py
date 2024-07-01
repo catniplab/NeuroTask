@@ -1,10 +1,37 @@
 import pandas as pd
 import numpy as np
 import pyarrow.parquet as pq
+import pyarrow as pa
 from scipy.signal import decimate
 
+def get_dataframe(data, filter_result=False):
+    bin = 1000/data.nwb.processing['spikes'].data_interfaces['spikes_counts'].rate
+    
+    keys = list(data.keys())
+    dataframes = []
+    
+    for key in keys:
+        if key == 'spikes_counts':
+            # Create DataFrame for 'spikes_counts' with 'Neuron' prefix
+            sp = pd.DataFrame(data['spikes_counts'].values, columns=data['spikes_counts'].columns)
+            sp.columns = ['Neuron' + str(col) for col in sp.columns]
+            dataframes.append(sp)
+        else:
+            df = pd.DataFrame(data[key].values, columns=[key])
 
-def load_and_filter_parquet(parquet_file_path, filter_letters=None):
+            dataframes.append(df)
+    
+    
+    # Concatenate all DataFrames into a single DataFrame
+    final_df = pd.concat(dataframes, axis=1)
+    print(f'Data loaded with bin size of {bin:.1f} ms')
+
+    if filter_result:
+        return final_df[final_df['result'].isin(filter_result)], bin
+    else:
+        return final_df, bin
+
+def load_and_filter_parquet(parquet_file_path, filter_letters = None):
     """
     Load a Parquet file, apply filters if provided, and return the filtered DataFrame and bin size.
 
@@ -13,7 +40,7 @@ def load_and_filter_parquet(parquet_file_path, filter_letters=None):
     filter_letters (list, optional): List of letters to filter out from the 'result' column.
 
     Returns:
-    tuple: Filtered DataFrame and bin size (in milliseconds) as a float.
+    tuple: Filtered DataFrame and bin size as a float.
     """
 
     # Read the Parquet file with filters applied
@@ -28,19 +55,18 @@ def load_and_filter_parquet(parquet_file_path, filter_letters=None):
     # Extract the bin size from the file name
     bin = float(parquet_file_path.split('_')[1])
 
-    print(f'Data loaded from {parquet_file_path} with bin size of {bin:.1g} ms')
-    print('Events columns:', [col for col in df.columns if col.startswith('Event')])
 
-    print('Covariates columns:',
-          [col for col in df.columns if
-           not col.startswith('Event') and
-           not col.startswith('Neuron') and col
-           not in ['trial_id', 'result', 'datasetID', 'session', 'animal', 'task']])
+
+    print(f'Data loaded from {parquet_file_path} with bin size of {bin:.1f} ms')
+    print('Events columns:',[col for col in df.columns if col.startswith('Event')])
+
+    print('Covariates columns:', [col for col in df.columns if not col.startswith('Event') and not col.startswith('Neuron') and col not in ['trial_id','result','datasetID','session','animal', 'task']])
 
     return df, bin
 
 
-def rebin(dataset1, prev_bin_size, new_bin_size, reset=True):
+
+def rebin(dataset1, prev_bin_size,new_bin_size, reset=True):
     """
     Rebin the given dataset to a new bin size.
 
@@ -130,8 +156,6 @@ def align_event(df,start_event,bin_size,offset_min=None,offset_max=None):
 ###$$ GET_SPIKES_WITH_HISTORY #####
 def get_spikes_with_history(neural_data,bins_before,bins_after,bins_current=1):
     """
-    from: https://github.com/KordingLab/Neural_Decoding/
-    
     Function that creates the covariate matrix of neural activity
 
     Parameters
