@@ -90,7 +90,7 @@ class LSTMForecasting(object):
         Number of time steps in the output sequence
     """
 
-    def __init__(self, units=400, dropout=0, num_epochs=10, verbose=0, input_time_steps=10, output_time_steps=5):
+    def __init__(self, units=400, dropout=0, num_epochs=10, verbose=0, input_time_steps=5, output_time_steps=1):
         self.units = units
         self.dropout = dropout
         self.num_epochs = num_epochs
