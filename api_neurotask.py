@@ -3,6 +3,8 @@ import numpy as np
 import pyarrow.parquet as pq
 import pyarrow as pa
 from scipy.signal import decimate
+from scipy.ndimage import gaussian_filter
+from sklearn.preprocessing import MinMaxScaler
 
 def get_dataframe(data, filter_result=False):
     bin = 1000/data.nwb.processing['spikes'].data_interfaces['spikes_counts'].rate
@@ -187,7 +189,7 @@ def get_spikes_with_history(neural_data,bins_before,bins_after,bins_current=1):
     for i in range(num_examples-bins_before-bins_after): #The first bins_before and last bins_after bins don't get filled in
         end_idx=start_idx+surrounding_bins; #The bins of neural data we will be including are between start_idx and end_idx (which will have length "surrounding_bins")
         X[i+bins_before,:,:]=neural_data[start_idx:end_idx,:] #Put neural data from surrounding bins in X, starting at row "bins_before"
-        start_idx=start_idx+1;
+        start_idx=start_idx+1
     return X
 
 
@@ -281,5 +283,207 @@ def process_data(df, bins_before, training_range, valid_range, testing_range, be
             y_train_list.append(y_train)
             y_test_list.append(y_test)
             y_val_list.append(y_valid)
+
+    return X_train_list, y_train_list, X_val_list, y_val_list, X_test_list, y_test_list
+
+def process_data_forecast(df, bins_before, training_range, valid_range, testing_range,zscore=False):
+
+    """
+    Process the dataset, splitting it into training, validation, and testing sets.
+
+    Parameters:
+        df (pd.DataFrame): The DataFrame containing the data.
+        bins_before (int): Number of bins before the output used for decoding.
+        training_range (list): The range [start, end] for the training set.
+        valid_range (list): The range [start, end] for the validation set.
+        testing_range (list): The range [start, end] for the testing set.
+        behavior_columns (list): List of columns containing behavioral data.
+        zscore (bool): Whether to apply z-score normalization. Defaults to False.
+
+    Returns:
+        tuple: A tuple containing lists of training, validation, and testing data.
+
+    """
+
+    neurons = [col for col in df.columns if col.startswith('Neuron')]
+    X_train_list = []
+    X_test_list = []
+    X_val_list = []
+
+    y_train_list = []
+    y_test_list = []
+    y_val_list = []
+
+    # Iterate over each unique animal in the dataset
+    for a in df['animal'].unique():
+        # Select data for the current animal
+        d = df[df['animal'] == a]
+
+        # Iterate over each session for the current animal
+        for session in d['session'].unique():
+            # Select data for the current session and filter out zero columns
+            df_session = df[(df['animal'] == a) & (df['session'] == session)][neurons].dropna(axis=1)
+            df_session = df_session.loc[:, (df_session != 0).any(axis=0)]
+
+            # Extract behavior data for the current session
+            #y = np.array(df[(df['session'] == session) & (df['animal'] == a)][behavior_columns])
+
+            # Convert DataFrame to NumPy array
+            session_data = df_session.to_numpy()
+
+            # Get the covariate matrix that includes spike history from previous bins
+            X = get_spikes_with_history(session_data, bins_before, 0, 0)
+            y = get_spikes_with_history(session_data,bins_before-1, 0, 1)
+            num_examples = X.shape[0]
+
+            # Define the ranges for training, testing, and validation sets
+            training_set = np.arange(int(np.round(training_range[0] * num_examples)) + bins_before, int(np.round(training_range[1] * num_examples)))
+            testing_set = np.arange(int(np.round(testing_range[0] * num_examples)) + bins_before, int(np.round(testing_range[1] * num_examples)) )
+            valid_set = np.arange(int(np.round(valid_range[0] * num_examples)) + bins_before, int(np.round(valid_range[1] * num_examples)) )
+
+            # Get training data
+            X_train = X[training_set, :, :]
+            y_train = y[training_set, :,:]
+
+            # Get testing data
+            X_test = X[testing_set, :, :]
+            y_test = y[testing_set, :,:]
+
+            # Get validation data
+            X_valid = X[valid_set, :, :]
+            y_valid = y[valid_set, :,:]
+
+            if zscore:
+
+                # Z-score "X" inputs
+                X_train_mean = np.nanmean(X_train, axis=0)
+                X_train_std = np.nanstd(X_train, axis=0)
+                X_train_std = np.where(X_train_std == 0, 1e-16, X_train_std)
+
+                X_train = (X_train - X_train_mean) / X_train_std
+                X_test = (X_test - X_train_mean) / X_train_std
+                X_valid = (X_valid - X_train_mean) / X_train_std
+
+                # Zero-center outputs
+                y_train_mean = np.mean(y_train, axis=0)
+                y_train = y_train - y_train_mean
+                y_test = y_test - y_train_mean
+                y_valid = y_valid - y_train_mean
+
+            X_train_list.append(X_train)
+            X_test_list.append(X_test)
+            X_val_list.append(X_valid)
+
+            y_train_list.append(y_train)
+            y_test_list.append(y_test)
+            y_val_list.append(y_valid)
+
+    return X_train_list, y_train_list, X_val_list, y_val_list, X_test_list, y_test_list
+
+    # Define a function to scale a list of 3D arrays
+def scale_data_list(data_list):
+        scaler = MinMaxScaler()
+        scaled_list = []
+        for data in data_list:
+            # Reshape to 2D for scaling
+            original_shape = data.shape
+            data_reshaped = data.reshape(-1, original_shape[-1])
+            
+            # Fit and transform the data
+            data_scaled = scaler.fit_transform(data_reshaped)
+            
+            # Reshape back to 3D
+            data_scaled_reshaped = data_scaled.reshape(original_shape)
+            scaled_list.append(data_scaled_reshaped)
+        return scaled_list, scaler
+
+def process_data_forecast_mimo(df, bins_before,bins_after, training_range, valid_range, testing_range,filter_g=False, bin = 20, sigma = 50, scale = False):
+
+    """
+    Process the dataset, splitting it into training, validation, and testing sets.
+
+    Parameters:
+        df (pd.DataFrame): The DataFrame containing the data.
+        bins_before (int): Number of bins before the output used for decoding.
+        training_range (list): The range [start, end] for the training set.
+        valid_range (list): The range [start, end] for the validation set.
+        testing_range (list): The range [start, end] for the testing set.
+        behavior_columns (list): List of columns containing behavioral data.
+        zscore (bool): Whether to apply z-score normalization. Defaults to False.
+
+    Returns:
+        tuple: A tuple containing lists of training, validation, and testing data.
+
+    """
+
+    neurons = [col for col in df.columns if col.startswith('Neuron')]
+    X_train_list = []
+    X_test_list = []
+    X_val_list = []
+
+    y_train_list = []
+    y_test_list = []
+    y_val_list = []
+
+    # Iterate over each unique animal in the dataset
+    for a in df['animal'].unique():
+        # Select data for the current animal
+        d = df[df['animal'] == a]
+
+        # Iterate over each session for the current animal
+        for session in d['session'].unique():
+            # Select data for the current session and filter out zero columns
+            df_session = df[(df['animal'] == a) & (df['session'] == session)][neurons].dropna(axis=1)
+            df_session = df_session.loc[:, (df_session != 0).any(axis=0)]
+
+            # Extract behavior data for the current session
+            #y = np.array(df[(df['session'] == session) & (df['animal'] == a)][behavior_columns])
+
+            # Convert DataFrame to NumPy array
+            session_data = df_session.to_numpy()
+            if filter_g:
+                session_data = gaussian_filter(df_session.to_numpy(), sigma=sigma / bin)
+
+            # Get the covariate matrix that includes spike history from previous bins
+            X = get_spikes_with_history(session_data, bins_before, 0, 0)
+            y = get_spikes_with_history(session_data,0, bins_after-1, 1)
+            num_examples = X.shape[0]
+
+            # Define the ranges for training, testing, and validation sets
+            training_set = np.arange(int(np.round(training_range[0] * num_examples)) + bins_before, int(np.round(training_range[1] * num_examples)))
+            testing_set = np.arange(int(np.round(testing_range[0] * num_examples)) + bins_before, int(np.round(testing_range[1] * num_examples)) )
+            valid_set = np.arange(int(np.round(valid_range[0] * num_examples)) + bins_before, int(np.round(valid_range[1] * num_examples)) )
+
+            # Get training data
+            X_train = X[training_set, :, :]
+            y_train = y[training_set, :,:]
+
+            # Get testing data
+            X_test = X[testing_set, :, :]
+            y_test = y[testing_set, :,:]
+
+            # Get validation data
+            X_valid = X[valid_set, :, :]
+            y_valid = y[valid_set, :,:]
+
+
+            X_train_list.append(X_train)
+            X_test_list.append(X_test)
+            X_val_list.append(X_valid)
+
+            y_train_list.append(y_train)
+            y_test_list.append(y_test)
+            y_val_list.append(y_valid)
+
+    if scale:
+
+        # Scale the input data lists
+        X_train_list, X_scaler = scale_data_list(X_train_list)
+        X_val_list, _ = scale_data_list(X_val_list)
+        X_test_list, _ = scale_data_list(X_test_list)
+
+        y_train_list, y_scaler = scale_data_list(y_train_list)
+        y_val_list, _ = scale_data_list(y_val_list)
+        y_test_list, _ = scale_data_list(y_test_list)
 
     return X_train_list, y_train_list, X_val_list, y_val_list, X_test_list, y_test_list
