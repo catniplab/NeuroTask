@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pyarrow.parquet as pq
 from scipy.signal import decimate
+from sklearn.preprocessing import MinMaxScaler
 
 
 def load_and_filter_parquet(parquet_file_path, filter_letters=None):
@@ -38,6 +39,43 @@ def load_and_filter_parquet(parquet_file_path, filter_letters=None):
            not in ['trial_id', 'result', 'datasetID', 'session', 'animal', 'task']])
 
     return df, bin
+
+def get_dataframe(data, filter_result=False):
+    """
+    Load a Nwb file, apply filters if provided, and return the filtered DataFrame and bin size.
+
+    Parameters:
+    data (str): Path to the nwb file.
+    filter_letters (list, optional): List of letters to filter out from the 'result' column.
+
+    Returns:
+    tuple: Filtered DataFrame and bin size (in milliseconds) as a float.
+    """
+    bin = 1000/data.nwb.processing['spikes'].data_interfaces['spikes_counts'].rate
+    
+    keys = list(data.keys())
+    dataframes = []
+    
+    for key in keys:
+        if key == 'spikes_counts':
+            # Create DataFrame for 'spikes_counts' with 'Neuron' prefix
+            sp = pd.DataFrame(data['spikes_counts'].values, columns=data['spikes_counts'].columns)
+            sp.columns = ['Neuron' + str(col) for col in sp.columns]
+            dataframes.append(sp)
+        else:
+            df = pd.DataFrame(data[key].values, columns=[key])
+
+            dataframes.append(df)
+    
+    
+    # Concatenate all DataFrames into a single DataFrame
+    final_df = pd.concat(dataframes, axis=1)
+    print(f'Data loaded with bin size of {bin:.1f} ms')
+
+    if filter_result:
+        return final_df[final_df['result'].isin(filter_result)], bin
+    else:
+        return final_df, bin
 
 
 def rebin(dataset1, prev_bin_size, new_bin_size, reset=True):
@@ -167,7 +205,7 @@ def get_spikes_with_history(neural_data,bins_before,bins_after,bins_current=1):
     return X
 
 
-def process_data(df, bins_before, training_range, valid_range, testing_range, behavior_columns,zscore=False):
+ef process_data(df, bins_before, training_range, valid_range, testing_range, behavior_columns,zscore=False, bins_after=1,scale = False):
 
     """
     Process the dataset, splitting it into training, validation, and testing sets.
@@ -180,6 +218,8 @@ def process_data(df, bins_before, training_range, valid_range, testing_range, be
         testing_range (list): The range [start, end] for the testing set.
         behavior_columns (list): List of columns containing behavioral data.
         zscore (bool): Whether to apply z-score normalization. Defaults to False.
+        bins_after (int): Number of bins after the output used for decoding.
+        scale (bool): Whether to scale data between 0 and 1. Defaults to False.
 
     Returns:
         tuple: A tuple containing lists of training, validation, and testing data.
@@ -214,6 +254,7 @@ def process_data(df, bins_before, training_range, valid_range, testing_range, be
 
             # Get the covariate matrix that includes spike history from previous bins
             X = get_spikes_with_history(session_data, bins_before, 0, 1)
+            y = get_spikes_with_history(y, 0, bins_after-1, 1)
             num_examples = X.shape[0]
 
             # Define the ranges for training, testing, and validation sets
@@ -223,15 +264,15 @@ def process_data(df, bins_before, training_range, valid_range, testing_range, be
 
             # Get training data
             X_train = X[training_set, :, :]
-            y_train = y[training_set, :]
+            y_train = y[training_set, :,:]
 
             # Get testing data
             X_test = X[testing_set, :, :]
-            y_test = y[testing_set, :]
+            y_test = y[testing_set, :,:]
 
             # Get validation data
             X_valid = X[valid_set, :, :]
-            y_valid = y[valid_set, :]
+            y_valid = y[valid_set, :,:]
 
             if zscore:
 
@@ -257,5 +298,33 @@ def process_data(df, bins_before, training_range, valid_range, testing_range, be
             y_train_list.append(y_train)
             y_test_list.append(y_test)
             y_val_list.append(y_valid)
+        if scale:
+
+                # Scale the input data lists
+                X_train_list, X_scaler = scale_data_list(X_train_list)
+                X_val_list, _ = scale_data_list(X_val_list)
+                X_test_list, _ = scale_data_list(X_test_list)
+
+                y_train_list, y_scaler = scale_data_list(y_train_list)
+                y_val_list, _ = scale_data_list(y_val_list)
+                y_test_list, _ = scale_data_list(y_test_list)
 
     return X_train_list, y_train_list, X_val_list, y_val_list, X_test_list, y_test_list
+
+
+# Scale a list of 3D arrays
+def scale_data_list(data_list):
+        scaler = MinMaxScaler()
+        scaled_list = []
+        for data in data_list:
+            # Reshape to 2D for scaling
+            original_shape = data.shape
+            data_reshaped = data.reshape(-1, original_shape[-1])
+            
+            # Fit and transform the data
+            data_scaled = scaler.fit_transform(data_reshaped)
+            
+            # Reshape back to 3D
+            data_scaled_reshaped = data_scaled.reshape(original_shape)
+            scaled_list.append(data_scaled_reshaped)
+        return scaled_list, scaler
