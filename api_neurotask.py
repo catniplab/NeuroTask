@@ -5,6 +5,7 @@ from scipy.signal import decimate
 from sklearn.preprocessing import MinMaxScaler
 
 
+
 def load_and_filter_parquet(parquet_file_path, filter_letters=None):
     """
     Load a Parquet file, apply filters if provided, and return the filtered DataFrame and bin size.
@@ -146,19 +147,29 @@ def align_trial(df,start_event,bin_size,offset_min=None,offset_max=None):
     
     df[start_event] = df[start_event].replace(False, np.nan)
     df['ev'] = df[start_event]
+    
     if offset_min:
         assert offset_min <= 0, "offset_min must be less than or equal to 0"
         offset_min=-offset_min//bin_size
-        df['ev'] = df['ev'].bfill(limit=offset_min).infer_objects(copy=False)
+        try:
+            df['ev'] = df['ev'].bfill(limit=offset_min).infer_objects(copy=False)
+        except TypeError:
+            df['ev'] = df['ev'].bfill(limit=offset_min).infer_objects()
     if offset_max:
         assert offset_max >= 0, "offset_max must be greater than or equal to 0"
-        offset_max=offset_max//bin_size
-        df['ev'] = df['ev'].ffill(limit=offset_max).infer_objects(copy=False)
+        offset_max = offset_max // bin_size
+        try:
+            df['ev'] = df['ev'].ffill(limit=offset_max).infer_objects(copy=None)
+        except TypeError:
+            df['ev'] = df['ev'].bfill(limit=offset_min).infer_objects()
     else:
         df['ev'] = df['ev'].ffill()
+        
     df = df[(df['ev'] == 1)]
     del(df['ev'])
+    
     return df
+
 
 def align_event(df,start_event,bin_size,offset_min=None,offset_max=None):
     # Apply align_trial to each group and concatenate the results
@@ -205,7 +216,7 @@ def get_spikes_with_history(neural_data,bins_before,bins_after,bins_current=1):
     return X
 
 
-ef process_data(df, bins_before, training_range, valid_range, testing_range, behavior_columns,zscore=False, bins_after=1,scale = False):
+def process_data(df, bins_before, training_range, valid_range, testing_range, behavior_columns,zscore=False, bins_after=1,scale = False):
 
     """
     Process the dataset, splitting it into training, validation, and testing sets.

@@ -4,6 +4,8 @@
 import numpy as np
 from numpy.linalg import inv as inv #Used in kalman filter
 
+from decorators import *
+
 #Used for naive bayes decoder
 try:
     import statsmodels.api as sm
@@ -169,7 +171,7 @@ class WienerCascadeRegression(object):
             models.append([regr,p])
         self.model=models
 
-
+        
     def predict(self,X_flat_test):
 
         """
@@ -397,7 +399,8 @@ class DenseNNRegression(object):
             model.fit(X_flat_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+    
+    @out_in_learning_phase
     def predict(self,X_flat_test):
 
         """
@@ -483,7 +486,8 @@ class SimpleRNNRegression(object):
             model.fit(X_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+        
+    @out_in_learning_phase
     def predict(self,X_test):
 
         """
@@ -568,7 +572,8 @@ class GRURegression(object):
             model.fit(X_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+        
+    @out_in_learning_phase
     def predict(self,X_test):
 
         """
@@ -653,7 +658,8 @@ class LSTMRegression(object):
             model.fit(X_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+        
+    @out_in_learning_phase
     def predict(self,X_test):
 
         """
@@ -1251,7 +1257,8 @@ class DenseNNClassification(object):
         else:
             model.fit(X_flat_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
             self.model=model
-
+            
+    @out_in_learning_phase
     def predict(self,X_flat_test):
 
         """
@@ -1349,7 +1356,8 @@ class SimpleRNNClassification(object):
             model.fit(X_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+        
+    @out_in_learning_phase
     def predict(self,X_test):
 
         """
@@ -1447,7 +1455,8 @@ class GRUClassification(object):
             model.fit(X_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+        
+    @out_in_learning_phase
     def predict(self,X_test):
 
         """
@@ -1544,7 +1553,8 @@ class LSTMClassification(object):
             model.fit(X_train,y_train,epochs=self.num_epochs,verbose=self.verbose) #Fit the model
         self.model=model
 
-
+        
+    @out_in_learning_phase
     def predict(self,X_test):
 
         """
