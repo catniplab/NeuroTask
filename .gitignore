@@ -180,6 +180,7 @@ cython_debug/
 logs/
 ckpts/
 data/
+NTBDataset
 ouput_figs/
 
 .pt/
