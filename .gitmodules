@@ -1,0 +1,3 @@
+[submodule "xfads_tutorial/xfads"]
+	path = xfads_tutorial/xfads
+	url = https://github.com/catniplab/xfads.git
