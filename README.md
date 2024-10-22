@@ -38,7 +38,7 @@ The dataset schema is comprised of:
 
 Each row represents a single time step.
 
-For more information on each of these components, please consult the provided [datasheet]().
+For more information on each of these components, please consult the provided [datasheet](docs/NeuroTask_datasheet.pdf).
 
 ## Loading the Dataset
 We developed an API, `api_neurotask.py`, to streamline data loading and preprocessing tasks, such as data rebinning and alignment to specific start event with adjustable offsets. You can find the api tutorial here: [tutorial](tutorial_data_analysis.ipynb).
