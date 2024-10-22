@@ -41,13 +41,13 @@ Each row represents a single time step.
 For more information on each of these components, please consult the provided [datasheet](docs/NeuroTask_datasheet.pdf).
 
 ## Loading the Dataset
-We developed an API, `api_neurotask.py`, to streamline data loading and preprocessing tasks, such as data rebinning and alignment to specific start event with adjustable offsets. You can find the api tutorial here: [tutorial](tutorial_data_analysis.ipynb).
+We developed an API, `api_neurotask.py`, to streamline data loading and preprocessing tasks, such as data rebinning and alignment to specific start event with adjustable offsets. You can find the api tutorial here: [tutorial](tutorial_data_analysis_nwb.ipynb).
 
 ## Repository Structure
 
 In this repository, you will find the code necessary to replicate the experiments of the presented paper.
 
-The [first notebook](tutorial_data_analysis.ipynb) regards the loading, processing and visualization of the data (parquet format).
+The [first notebook](tutorial_data_analysis.ipynb) regards the loading, processing and visualization of the data (parquet format) and [nwb format](tutorial_data_analysis_nwb.ipynb) .
 
 
 The [second notebook](tutorial_baselines.ipynb) presents the code to reproduce the benchmark results in the manuscript. 
