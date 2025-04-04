@@ -165,7 +165,7 @@ cython_debug/
 # Model checkpoints
 #ckpts/
 
-#data/
+data/
 
 # For mac
 .DS_Store
