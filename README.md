@@ -6,6 +6,7 @@ The figure here shows an illustration.
 <img src='img/NeuroTask3.png' width='680px'>
 
 ## Recent updates:
+- NeuroTask has been accepted as [Bernstein](https://www.world-wide.org/bernstein-24/neurotask-benchmark-dataset-multi-task-c8ba9ac5/) and [Cosyne - soon](https://www.world-wide.org/cosyne-25/conditional-diffusion-framework-31efbe03/) posters.
 - NeuroTask nwb version was introduced at the [Open Neurodata Showcase '24](https://neurodatawithoutborders.github.io/nwb_hackathons/HCK20_2024_OpenNeurodataShowcase/)
 - Dataset is now also available in NWB format on [Dandi](https://dandiarchive.org/dandiset/search?search=neurotask) and the [tutorial](tutorial_data_analysis_nwb.ipynb). 
 
